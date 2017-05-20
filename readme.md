@@ -10,7 +10,7 @@ And scrolls the mouse up / down (according to the message received)
 
 ```bash
 # clone the repo
-$ git clone https://github.com/AmitBu/arduino-node-serialport.git new-app
+$ git clone https://github.com/AmitBu/arduino-nodejs-serialport.git new-app
 
 # change directory to your app
 $ cd new-app

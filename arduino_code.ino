@@ -23,6 +23,6 @@ void loop() {
       Serial.println("2");
     }
     
-    // Redude communication frequency
+    // Reduce communication frequency
     delay(10);
 }
