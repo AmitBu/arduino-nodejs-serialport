@@ -1,0 +1,16 @@
+{
+  "name": "mouse-control",
+  "version": "1.0.0",
+  "description": "node.js application the changes scrolling position using arduino push buttons",
+  "main": "index.js",
+  "scripts": {
+    "start": "node index.js",
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "author": "Amit Bourmad",
+  "license": "ISC",
+  "dependencies": {
+    "robotjs": "^0.4.7",
+    "serialport": "^4.0.7"
+  }
+}
