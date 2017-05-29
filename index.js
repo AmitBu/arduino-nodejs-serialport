@@ -1,15 +1,21 @@
-var robot = require("robotjs");
-var SerialPort = require("serialport");
+const robot = require("robotjs");
+const SerialPort = require("serialport");
+
+const MOVE_DELTA = 10;
 
 // Serial port messages for actions
-const UP_ACTION = '1';
-const DOWN_ACTION = '2';
+const ACTION = {
+	scrollUp: '1',
+	scrollDown: '2',
+	moveY: 'y:',
+	moveX: 'x:'
+}
 
 /**
  * Returns the port the contains arduino
  * @param callback - function - returns the port
  */
-function getArduinoPort(callback){
+function getArduinoPort(callback) {
 	SerialPort.list((err, ports) => {
 		let port = ports.find(p => p.manufacturer && p.manufacturer.includes('Arduino'));
 
@@ -22,6 +28,12 @@ function getArduinoPort(callback){
  * @param {SerialPort} port 
  */
 function handlePortData(port) {
+	var Readline = SerialPort.parsers.Readline;
+
+	var parser = port.pipe(Readline({ delimiter: '\n' }));
+
+	var counter = 0;
+
 	port.on('open', function () {
 		port.write('main screen turn on', function (err) {
 			if (err) {
@@ -30,15 +42,63 @@ function handlePortData(port) {
 			console.log('message written');
 		});
 
-		port.on('data', function (data) {
-			if (data == UP_ACTION) {
-				moveUp();
+		parser.on('data', function (data) {
+			//let code = String.fromCharCode.apply(null, data);
+			console.log(data);
+			//console.log(++counter, data, "\n__");
+
+			switch (data) {
+				case ACTION.scrollUp:
+					moveUp();
+					break;
+				case ACTION.scrollDown:
+					moveDown();
+					break;
 			}
-			else if (data == DOWN_ACTION) {
-				moveDown();
+			// Moving actions
+			if (data.includes(ACTION.moveX)) {
+				moveX(parseMoveValue(data));
+			}
+			if (data.includes(ACTION.moveY)) {
+				moveY(parseMoveValue(data));
 			}
 		});
 	});
+}
+
+/**
+ * Takes the value of X / Y postition received, and returns an int
+ * @param {string} value 
+ * @return {number}
+ */
+function parseMoveValue(value) {
+	let parsed = value.replace(ACTION.moveX, "").replace(ACTION.moveY, "");
+	parsed = parseInt(parsed) || 0;
+	// TODO: Validations for number length
+	return parsed;
+}
+
+/**
+ * Move cursor on the Y axis
+ * @param {number} value 
+ * @param {number} multiplier 
+ */
+function moveY(value, multiplier = MOVE_DELTA) {
+	let { x, y } = robot.getMousePos();
+
+	// Minus added for value - plus needs to be top & minus bottom
+	robot.moveMouse(x, y + (-value * MOVE_DELTA));
+}
+
+/**
+ * Move cursor on the X axis
+ * @param {number} value 
+ * @param {number} multiplier 
+ */
+function moveX(value, multiplier = MOVE_DELTA) {
+	let { x, y } = robot.getMousePos();
+
+	robot.moveMouse(x + (value * MOVE_DELTA), y);
 }
 
 /**

@@ -11,6 +11,6 @@
   "license": "ISC",
   "dependencies": {
     "robotjs": "^0.4.7",
-    "serialport": "^4.0.7"
+    "serialport": "^5.0.0-beta3"
   }
 }
