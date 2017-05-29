@@ -43,9 +43,7 @@ function handlePortData(port) {
 		});
 
 		parser.on('data', function (data) {
-			//let code = String.fromCharCode.apply(null, data);
 			console.log(data);
-			//console.log(++counter, data, "\n__");
 
 			switch (data) {
 				case ACTION.scrollUp:
