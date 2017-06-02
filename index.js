@@ -2,6 +2,9 @@ const robot = require("robotjs");
 const SerialPort = require("serialport");
 
 const MOVE_DELTA = 10;
+const SCROLL_PIXELS = 20; // The amount of pixels per scroll
+const DEFAULT_SCROLL = 1; // The scroll default speed multiplier
+const SCROLL_SPEED_DELTA = 0.3;
 
 // Serial port messages for actions
 const ACTION = {
@@ -9,6 +12,13 @@ const ACTION = {
 	scrollDown: '2',
 	moveY: 'y:',
 	moveX: 'x:'
+}
+const UP = 'up';
+const DOWN = 'down';
+
+let scrollSpeed = {
+	[UP]: DEFAULT_SCROLL,
+	[DOWN]: DEFAULT_SCROLL
 }
 
 /**
@@ -32,26 +42,22 @@ function handlePortData(port) {
 
 	var parser = port.pipe(Readline({ delimiter: '\n' }));
 
-	var counter = 0;
+	let lastUp = null;
+	let lastDown = null;
 
 	port.on('open', function () {
-		port.write('main screen turn on', function (err) {
-			if (err) {
-				return console.log('Error on write: ', err.message);
-			}
-			console.log('message written');
-		});
-
+		// Listen to serial port messages from arduino
 		parser.on('data', function (data) {
-			console.log(data);
-
-			switch (data) {
-				case ACTION.scrollUp:
-					moveUp();
-					break;
-				case ACTION.scrollDown:
-					moveDown();
-					break;
+			// Scroll actions
+			if (data === ACTION.scrollUp) {
+				checkScrollSpeed(UP, new Date() - lastUp);
+				lastUp = new Date();
+				moveUp();
+			}
+			if (data === ACTION.scrollDown) {
+				checkScrollSpeed(DOWN, new Date() - lastDown);
+				lastDown = new Date();
+				moveDown();
 			}
 			// Moving actions
 			if (data.includes(ACTION.moveX)) {
@@ -62,6 +68,21 @@ function handlePortData(port) {
 			}
 		});
 	});
+}
+
+/**
+ * Checks the diff between last presses, updates scrolling speed accordingly
+ * @param {string} position - 'up' / 'down'
+ * @param {number} dateDiff - Milliseconds between last press
+ */
+function checkScrollSpeed(position, dateDiff) {
+	if (dateDiff < 200) { // TODO: Constant
+		scrollSpeed[position] += SCROLL_SPEED_DELTA;
+		console.log(scrollSpeed[position]);
+	}
+	else {
+		scrollSpeed[position] = DEFAULT_SCROLL;
+	}
 }
 
 /**
@@ -104,7 +125,7 @@ function moveX(value, multiplier = MOVE_DELTA) {
  */
 function moveUp() {
 	console.log("Scroll up");
-	robot.scrollMouse(0, 20);
+	robot.scrollMouse(0, SCROLL_PIXELS * scrollSpeed[UP]);
 }
 
 /**
@@ -112,7 +133,7 @@ function moveUp() {
  */
 function moveDown() {
 	console.log("Scroll down");
-	robot.scrollMouse(0, -20);
+	robot.scrollMouse(0, -SCROLL_PIXELS * scrollSpeed[DOWN]);
 }
 
 function init() {
