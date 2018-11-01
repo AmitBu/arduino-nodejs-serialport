@@ -1,6 +1,6 @@
 # Arduino serial port to node.js communication 
 
-This is an example code for working with Arduino & speaking with the connected computer using node.js application
+This is an example code for working with Arduino & communicating with the connected computer using node.js application.
 In the provided example you can see that the application waits for data to be received from Arduino serial port,
 And scrolls the mouse up / down (according to the message received)
 
